@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <PackAsTool>True</PackAsTool>
+    <ToolCommandName>dotnet link</ToolCommandName>
+    <IncludeSymbols>True</IncludeSymbols>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Title>Dotnet Link</Title>
+    <Description>Dotnet Link is at tool to help you itorate on NuGet packages locally on your machine. Using this you can link a local nuget project to another project on your machine. This will generate configuration MSBuild files in the obj directory to connect them. This is very useful for when you nuget packages contain .targets and .build files which you would normally have to manually link. This also will auto add source generators.</Description>
+    <Copyright>Byron Mayne</Copyright>
+    <PackageTags>dotnet,link,</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CliWrap" Version="3.6.6" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Spectre.Console" Version="0.49.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+  </ItemGroup>
+
+</Project>

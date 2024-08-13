@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.10.34916.146
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dotnet.Link", "Dotnet.Link.csproj", "{63B3BE9A-8810-4DAD-85A0-15F8EB209F91}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{63B3BE9A-8810-4DAD-85A0-15F8EB209F91}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{63B3BE9A-8810-4DAD-85A0-15F8EB209F91}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{63B3BE9A-8810-4DAD-85A0-15F8EB209F91}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{63B3BE9A-8810-4DAD-85A0-15F8EB209F91}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8974CC0D-455D-42B5-9C7D-8699D19E613C}
+	EndGlobalSection
+EndGlobal
