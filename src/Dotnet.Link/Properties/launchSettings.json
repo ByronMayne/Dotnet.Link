@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Dotnet.Link": {
+      "commandName": "Project",
+      "commandLineArgs": "--nuget-project D:\\\\dev\\\\gdw\\\\libraries\\\\clibuilder\\\\CliBuilder.SourceGenerator\\\\Gdw.CliBuilder.SourceGenerator.csproj --target-project D:\\dev\\gdw\\libraries\\perforce\\Perforce\\Gdw.Perforce.csproj"
+    }
+  }
+}

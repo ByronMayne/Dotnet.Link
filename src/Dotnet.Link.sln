@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.10.34916.146
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dotnet.Link", "Dotnet.Link.csproj", "{63B3BE9A-8810-4DAD-85A0-15F8EB209F91}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dotnet.Link", "Dotnet.Link\Dotnet.Link.csproj", "{3EF1A8CB-18AA-4111-8FED-80B060E780E8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,10 +11,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{63B3BE9A-8810-4DAD-85A0-15F8EB209F91}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{63B3BE9A-8810-4DAD-85A0-15F8EB209F91}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{63B3BE9A-8810-4DAD-85A0-15F8EB209F91}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{63B3BE9A-8810-4DAD-85A0-15F8EB209F91}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3EF1A8CB-18AA-4111-8FED-80B060E780E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3EF1A8CB-18AA-4111-8FED-80B060E780E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3EF1A8CB-18AA-4111-8FED-80B060E780E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3EF1A8CB-18AA-4111-8FED-80B060E780E8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
