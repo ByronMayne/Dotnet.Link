@@ -47,8 +47,8 @@ jobs:
   publish:
     name: Publish | ${{ matrix.project.name }}
     runs-on: windows-latest
-    needs: 
-      - test
+    # needs: 
+    #   - test
     strategy:
       matrix:
         project: 
