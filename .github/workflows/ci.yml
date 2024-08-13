@@ -59,6 +59,6 @@ jobs:
       - name: Pack | ${{ matrix.project.name }}
         run: dotnet pack src\${{ matrix.project.name }}\${{ matrix.project.name }}.csproj -p:Version=${{env.GitVersion_AssemblySemVer}}  -p:PackageVersion=${{env.GitVersion_FullSemVer}} 
       # Release 
-      # - name: Push | ${{ matrix.project.name }}
-      #   if: github.event_name == 'release' 
-      #   run: dotnet nuget push src\${{ matrix.project.name }}\bin\${{env.Configuration}}\*.nupkg --skip-duplicate --api-key ${{secrets.NUGET_API_KEY}}  --source https://api.nuget.org/v3/index.json
+      - name: Push | ${{ matrix.project.name }}
+        if: github.event_name == 'release' 
+        run: dotnet nuget push src\${{ matrix.project.name }}\bin\${{env.Configuration}}\*.nupkg --skip-duplicate --api-key ${{secrets.NUGET_API_KEY}}  --source https://api.nuget.org/v3/index.json
