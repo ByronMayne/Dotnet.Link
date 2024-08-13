@@ -1,0 +1,78 @@
+name: Publish
+on: 
+  push: {}
+  pull_request:  {}
+  release:
+    types: [published]
+  
+env:
+  Configuration: Release
+  ProjectDir: src\Dotnet.Link\
+  ProjectName: Dotnet.Link.csproj
+  SolutionPath: src\Dotnet.Link.sln
+jobs:
+  build:
+    name: Build | All
+    runs-on: windows-latest
+    steps: 
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}   
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 6.0.x
+      - name: Build Solution
+        run: dotnet test src\SourceGenerator.Foundations.sln
+
+  # test: 
+  #   name: Test | ${{ matrix.project.name }}
+  #   runs-on: windows-latest
+  #   needs: build
+  #   strategy:
+  #     matrix:
+  #       project: 
+  #         - 
+  # steps: 
+  #   - uses: actions/checkout@v3
+  #     with:
+  #       ref: ${{ github.head_ref }}   
+  #   - name: Setup .NET
+  #     uses: actions/setup-dotnet@v3
+  #     with:
+  #       dotnet-version: 6.0.x
+  #   - name: Test | ${{ matrix.project.name }}
+  #     run: dotnet test src\${{ matrix.project.path }}${{ matrix.project.name }}\${{ matrix.project.name }}.csproj
+
+  publish:
+    name: Publish | ${{ matrix.project.name }}
+    runs-on: windows-latest
+    needs: 
+      - test
+    strategy:
+      matrix:
+        project: 
+            - name: Dotnet.Link
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}   # checkout the correct branch name
+          fetch-depth: 0                # fetch the whole repo history
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 6.0.x
+      - name: Restore
+        run: dotnet tool restore 
+      - name: GitVersion
+        run: dotnet gitversion /output buildserver
+      # Build
+      - name: Build | ${{ matrix.project.name }}
+        run: dotnet build src\${{ matrix.project.name }}\${{ matrix.project.name }}.csproj -p:Version=${{env.GitVersion_AssemblySemVer}} -p:PackageVersion=${{env.GitVersion_SemVer}} 
+      # Pack 
+      - name: Pack | ${{ matrix.project.name }}
+        run: dotnet pack src\${{ matrix.project.name }}\${{ matrix.project.name }}.csproj -p:Version=${{env.GitVersion_AssemblySemVer}}  -p:PackageVersion=${{env.GitVersion_FullSemVer}} 
+      # Release 
+      # - name: Push | ${{ matrix.project.name }}
+      #   if: github.event_name == 'release' 
+      #   run: dotnet nuget push src\${{ matrix.project.name }}\bin\${{env.Configuration}}\*.nupkg --skip-duplicate --api-key ${{secrets.NUGET_API_KEY}}  --source https://api.nuget.org/v3/index.json
