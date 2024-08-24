@@ -2,7 +2,6 @@
   "profiles": {
     "Dotnet.Link": {
       "commandName": "Project",
-      "commandLineArgs": "--nuget-project D:\\\\dev\\\\gdw\\\\libraries\\\\clibuilder\\\\CliBuilder.SourceGenerator\\\\Gdw.CliBuilder.SourceGenerator.csproj --target-project D:\\dev\\gdw\\libraries\\perforce\\Perforce\\Gdw.Perforce.csproj"
+      "commandLineArgs": " --target-project D:\\dev\\gdw\\cadet\\cadet.service\\src\\Source\\Cadet.HostBuilder\\Cadet.Hosting.csproj --nuget-project D:\\dev\\gdw\\libraries\\gdw.diagnostics\\src\\Gdw.Diagnostics\\Gdw.Diagnostics.csproj"
     }
-  }
 }

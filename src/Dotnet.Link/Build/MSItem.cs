@@ -5,6 +5,12 @@ namespace Dotnet.Link.Build
 	public abstract class MSItem
 	{
 		[XmlAttribute("Include")]
-		public required string Include { get; set; }
-    }
+		public string? Include { get; set; } = null;
+
+		[XmlAttribute("Remove")]
+		public string? Remove { get; set; } = null;
+
+		[XmlAttribute("Update")]
+		public string? Update { get; set; } = null;
+	}
 }

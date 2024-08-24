@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <PackAsTool>True</PackAsTool>
-    <ToolCommandName>dotnet link</ToolCommandName>
+    <ToolCommandName>dotnet-link</ToolCommandName>
     <IncludeSymbols>True</IncludeSymbols>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Title>Dotnet Link</Title>

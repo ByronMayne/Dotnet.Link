@@ -5,14 +5,38 @@ using System.Text.Json.Nodes;
 
 namespace Dotnet.Link
 {
-	internal class GetProjectItemsCommand
+	internal class DotnetCommands
 	{
+
+		public static async Task<string?> GetPropertyAsync(
+			string projectPath,
+			string propertyName)
+		{
+			MemoryStream memoryStream = new MemoryStream();
+			string arguments = $"msbuild {projectPath} --getProperty:{propertyName}";
+			await Cli.Wrap("dotnet")
+				.WithArguments(arguments)
+				.WithStandardOutputPipe(PipeTarget.ToStream(memoryStream))
+				.ExecuteAsync();
+
+			using(StreamReader reader = new StreamReader(memoryStream))
+			{
+				memoryStream.Position = 0;
+				string content = reader.ReadToEnd();
+				return content.Trim();
+			}
+		}
+
 		public static async Task<IList<ProjectItem>> GetItems(
 			string projectPath,
 			string itemName,
 			string? target = null)
 		{
-			string arguments = $"msbuild {projectPath} -t:{target} --getItem:{itemName}";
+			string arguments = $"msbuild";
+			if (!string.IsNullOrWhiteSpace(projectPath)) arguments += $" {projectPath}";
+			if (!string.IsNullOrWhiteSpace(target)) arguments += $" -t:{target}";
+			if (!string.IsNullOrWhiteSpace(itemName)) arguments += $" --getItem:{itemName}";
+
 			MemoryStream memoryStream = new MemoryStream();
 
 			await Cli.Wrap("dotnet")

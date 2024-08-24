@@ -1,4 +1,6 @@
-﻿using System.CommandLine.Builder;
+﻿using Mayne.Dotnet.Link.Commands;
+using System.CommandLine;
+using System.CommandLine.Builder;
 using System.CommandLine.Parsing;
 
 namespace Dotnet.Link

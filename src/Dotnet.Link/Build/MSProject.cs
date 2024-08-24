@@ -19,6 +19,7 @@ namespace Dotnet.Link.Build
         public List<MSProperty> Properties { get; set; }
 
         [XmlArray("ItemGroup")]
+        [XmlArrayItem(typeof(PackageReference))]
         [XmlArrayItem(typeof(Reference))]
         [XmlArrayItem(typeof(AnalyzerItem))]
         public List<MSItem> Items { get; set; }

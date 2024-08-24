@@ -93,6 +93,17 @@ namespace Dotnet.Link
 		}
 
 
+		public bool TryGet(string memberName, bool defautlValue)
+		{
+			if(ContainsKey(memberName))
+			{
+				return bool.TryParse(this[memberName], out bool value)
+					? value
+					: defautlValue;
+			}
+			return defautlValue;
+		}
+
 		private string? Get([CallerMemberName] string memberName = "")
 			=> ContainsKey(memberName) ? this[memberName] : null;
 

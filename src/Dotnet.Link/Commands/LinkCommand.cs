@@ -1,9 +1,12 @@
-﻿using Dotnet.Link.Build;
+﻿using Dotnet.Link;
+using Dotnet.Link.Build;
 using Spectre.Console;
 using System.CommandLine;
+using System.ComponentModel;
 
-namespace Dotnet.Link
+namespace Mayne.Dotnet.Link.Commands
 {
+
 	internal class LinkCommand : RootCommand
 	{
 		public LinkCommand() : base()
@@ -35,7 +38,21 @@ namespace Dotnet.Link
 			MSProject propsProject = new MSProject();
 			MSProject targetsProject = new MSProject();
 
-			IList<ProjectItem> nugetInputs = await GetProjectItemsCommand.GetItems(nugetProject.FullName, "NuGetPackInput", "GenerateNuspec");
+			// Remove the existing nuget package 
+			string? nugetPackageName = await DotnetCommands.GetPropertyAsync(nugetProject.FullName, "PackageId");
+			if (!string.IsNullOrEmpty(nugetPackageName))
+			{
+				AnsiConsole.MarkupLine($"[grey66] Removing existing nuget package [lightsalmon3]{nugetPackageName}[/] from [lightsalmon3]{targetProject.Name}[/][/]");
+				targetsProject.Items.Add(new PackageReference() { Remove = nugetPackageName });
+			}
+
+			// Add nuget packages 
+			IList<ProjectItem> nugetReferences = await DotnetCommands.GetItems(nugetProject.FullName, "PackageReference");
+			bool.TryParse(await DotnetCommands.GetPropertyAsync(targetProject.FullName, "ManagePackageVersionsCentrally"), out bool isCentrallyManaged);
+
+			AddTransativeNugetReferences(targetProject, targetsProject, nugetPackageName, nugetReferences, isCentrallyManaged);
+
+			IList<ProjectItem> nugetInputs = await DotnetCommands.GetItems(nugetProject.FullName, "NuGetPackInput", "GenerateNuspec");
 
 			foreach (ProjectItem nuget in nugetInputs)
 			{
@@ -107,6 +124,24 @@ namespace Dotnet.Link
 			AnsiConsole.MarkupLine($"[grey66] Writing [lightsalmon3]{targetFileName}[/] to [lightsalmon3]obj/[/] folder[/]");
 			File.WriteAllText(propsPath, propsProject.Serialize());
 			AnsiConsole.MarkupLine($"[grey66] Writing [lightsalmon3]{propsFileName}[/] to [lightsalmon3]obj/[/] folder[/]");
+		}
+
+		private static void AddTransativeNugetReferences(FileInfo targetProject, MSProject targetsProject, string? nugetPackageName, IList<ProjectItem> nugetReferences, bool isCentrallyManaged)
+		{
+			int includeCount = 1;
+			AnsiConsole.MarkupLine($"[grey66] Adding transitive NuGet references of of [lightsalmon3]{nugetPackageName}[/] to [lightsalmon3]{targetProject.Name}[/][/]");
+			foreach (ProjectItem package in nugetReferences)
+			{
+				if (!package.TryGet("IsImplicitlyDefined", false))
+				{
+					string packageName = package.Identity;
+					string packageVersion = package["Version"];
+
+					includeCount++;
+					targetsProject.Items.Add(PackageReference.Create(packageName, packageVersion, isCentrallyManaged));
+					AnsiConsole.MarkupLine($"[lightskyblue3]  [darkseagreen]{includeCount}.[/] {packageName} @ {packageVersion}[/]");
+				}
+			}
 		}
 
 		private static FileInfo? GetDefaultTargetProject()

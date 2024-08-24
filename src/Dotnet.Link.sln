@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.10.34916.146
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dotnet.Link", "Dotnet.Link\Dotnet.Link.csproj", "{3EF1A8CB-18AA-4111-8FED-80B060E780E8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mayne.Dotnet.Link", "Dotnet.Link\Mayne.Dotnet.Link.csproj", "{3EF1A8CB-18AA-4111-8FED-80B060E780E8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
