@@ -37,6 +37,7 @@ namespace Mayne.Dotnet.Link.Commands
 
 			MSProject propsProject = new MSProject();
 			MSProject targetsProject = new MSProject();
+			string? targetFramework = await GetTargetFrameworkAsync(targetProject);
 
 			// Remove the existing nuget package 
 			string? nugetPackageName = await DotnetCommands.GetPropertyAsync(nugetProject.FullName, "PackageId");
@@ -47,12 +48,18 @@ namespace Mayne.Dotnet.Link.Commands
 			}
 
 			// Add nuget packages 
-			IList<ProjectItem> nugetReferences = await DotnetCommands.GetItems(nugetProject.FullName, "PackageReference");
+			IList<ProjectItem> nugetReferences = await DotnetCommands.GetItems(nugetProject.FullName, "PackageReference", targetFramework: targetFramework);
+			IList<ProjectItem> packageVersions = await DotnetCommands.GetItems(nugetProject.FullName, "PackageVersion", targetFramework: targetFramework);
+			IList<ProjectItem> targetProjectPackageReferences = await DotnetCommands.GetItems(targetProject.FullName, "PackageReference");
 			bool.TryParse(await DotnetCommands.GetPropertyAsync(targetProject.FullName, "ManagePackageVersionsCentrally"), out bool isCentrallyManaged);
 
-			AddTransativeNugetReferences(targetProject, targetsProject, nugetPackageName, nugetReferences, isCentrallyManaged);
+			AddTransativeNugetReferences(targetProject, targetsProject, nugetPackageName, nugetReferences, packageVersions, targetProjectPackageReferences, isCentrallyManaged);
 
-			IList<ProjectItem> nugetInputs = await DotnetCommands.GetItems(nugetProject.FullName, "NuGetPackInput", "GenerateNuspec");
+			IList<ProjectItem> nugetInputs = await DotnetCommands.GetItems(nugetProject.FullName, "NuGetPackInput", "GenerateNuspec", targetFramework);
+			if (nugetInputs.Count == 0 && !string.IsNullOrWhiteSpace(targetFramework))
+			{
+				nugetInputs = await DotnetCommands.GetItems(nugetProject.FullName, "BuiltProjectOutputGroupOutput", "BuiltProjectOutputGroup", targetFramework);
+			}
 
 			foreach (ProjectItem nuget in nugetInputs)
 			{
@@ -62,7 +69,7 @@ namespace Mayne.Dotnet.Link.Commands
 					Reference reference = new Reference()
 					{
 						Include = nuget.Filename,
-						HintPath = nuget.FullPath
+						HintPath = GetReferencePath(nuget)
 					};
 
 					propsProject.Items.Add(reference);
@@ -126,22 +133,81 @@ namespace Mayne.Dotnet.Link.Commands
 			AnsiConsole.MarkupLine($"[grey66] Writing [lightsalmon3]{propsFileName}[/] to [lightsalmon3]obj/[/] folder[/]");
 		}
 
-		private static void AddTransativeNugetReferences(FileInfo targetProject, MSProject targetsProject, string? nugetPackageName, IList<ProjectItem> nugetReferences, bool isCentrallyManaged)
+		private static void AddTransativeNugetReferences(
+			FileInfo targetProject,
+			MSProject targetsProject,
+			string? nugetPackageName,
+			IList<ProjectItem> nugetReferences,
+			IList<ProjectItem> packageVersions,
+			IList<ProjectItem> targetProjectPackageReferences,
+			bool isCentrallyManaged)
 		{
 			int includeCount = 1;
+			Dictionary<string, string> packageVersionLookup = packageVersions
+				.Where(p => !string.IsNullOrWhiteSpace(p.Identity) && TryGetVersion(p) is not null)
+				.ToDictionary(p => p.Identity, p => TryGetVersion(p)!, StringComparer.OrdinalIgnoreCase);
+			HashSet<string> directTargetPackageReferences = targetProjectPackageReferences
+				.Where(p => !string.IsNullOrWhiteSpace(p.Identity))
+				.Select(p => p.Identity)
+				.ToHashSet(StringComparer.OrdinalIgnoreCase);
+
 			AnsiConsole.MarkupLine($"[grey66] Adding transitive NuGet references of of [lightsalmon3]{nugetPackageName}[/] to [lightsalmon3]{targetProject.Name}[/][/]");
 			foreach (ProjectItem package in nugetReferences)
 			{
 				if (!package.TryGet("IsImplicitlyDefined", false))
 				{
 					string packageName = package.Identity;
-					string packageVersion = package["Version"];
+
+					if (directTargetPackageReferences.Contains(packageName))
+					{
+						AnsiConsole.MarkupLine($"[grey66] Skipping [lightsalmon3]{packageName}[/] because {targetProject.Name} already references it directly[/]");
+						continue;
+					}
+
+					string? packageVersion = TryGetVersion(package);
+					if (string.IsNullOrWhiteSpace(packageVersion))
+					{
+						packageVersionLookup.TryGetValue(packageName, out packageVersion);
+					}
+
+					if (string.IsNullOrWhiteSpace(packageVersion))
+					{
+						throw new InvalidOperationException($"Unable to resolve a version for transitive package '{packageName}'.");
+					}
 
 					includeCount++;
 					targetsProject.Items.Add(PackageReference.Create(packageName, packageVersion, isCentrallyManaged));
 					AnsiConsole.MarkupLine($"[lightskyblue3]  [darkseagreen]{includeCount}.[/] {packageName} @ {packageVersion}[/]");
 				}
 			}
+		}
+
+		private static string? TryGetVersion(ProjectItem package)
+		{
+			return package.TryGetValue("Version", out string? version) && !string.IsNullOrWhiteSpace(version)
+				? version
+				: null;
+		}
+
+		private static string GetReferencePath(ProjectItem nugetInput)
+		{
+			return nugetInput.TryGetValue("FinalOutputPath", out string? finalOutputPath) && !string.IsNullOrWhiteSpace(finalOutputPath)
+				? finalOutputPath
+				: nugetInput.FullPath;
+		}
+
+		private static async Task<string?> GetTargetFrameworkAsync(FileInfo targetProject)
+		{
+			string? targetFramework = await DotnetCommands.GetPropertyAsync(targetProject.FullName, "TargetFramework");
+			if (!string.IsNullOrWhiteSpace(targetFramework))
+			{
+				return targetFramework;
+			}
+
+			string? targetFrameworks = await DotnetCommands.GetPropertyAsync(targetProject.FullName, "TargetFrameworks");
+			return targetFrameworks?
+				.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+				.FirstOrDefault();
 		}
 
 		private static FileInfo? GetDefaultTargetProject()

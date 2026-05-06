@@ -10,10 +10,15 @@ namespace Dotnet.Link
 
 		public static async Task<string?> GetPropertyAsync(
 			string projectPath,
-			string propertyName)
+			string propertyName,
+			string? targetFramework = null)
 		{
 			MemoryStream memoryStream = new MemoryStream();
-			string arguments = $"msbuild {projectPath} --getProperty:{propertyName}";
+			string arguments = $"msbuild \"{projectPath}\" --getProperty:{propertyName}";
+			if (!string.IsNullOrWhiteSpace(targetFramework))
+			{
+				arguments += $" -p:TargetFramework={targetFramework}";
+			}
 			await Cli.Wrap("dotnet")
 				.WithArguments(arguments)
 				.WithStandardOutputPipe(PipeTarget.ToStream(memoryStream))
@@ -30,12 +35,14 @@ namespace Dotnet.Link
 		public static async Task<IList<ProjectItem>> GetItems(
 			string projectPath,
 			string itemName,
-			string? target = null)
+			string? target = null,
+			string? targetFramework = null)
 		{
 			string arguments = $"msbuild";
-			if (!string.IsNullOrWhiteSpace(projectPath)) arguments += $" {projectPath}";
+			if (!string.IsNullOrWhiteSpace(projectPath)) arguments += $" \"{projectPath}\"";
 			if (!string.IsNullOrWhiteSpace(target)) arguments += $" -t:{target}";
 			if (!string.IsNullOrWhiteSpace(itemName)) arguments += $" --getItem:{itemName}";
+			if (!string.IsNullOrWhiteSpace(targetFramework)) arguments += $" -p:TargetFramework={targetFramework}";
 
 			MemoryStream memoryStream = new MemoryStream();
 
