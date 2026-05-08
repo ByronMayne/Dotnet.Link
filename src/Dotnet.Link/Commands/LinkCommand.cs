@@ -7,9 +7,9 @@ using System.ComponentModel;
 namespace Mayne.Dotnet.Link.Commands
 {
 
-	internal class LinkCommand : RootCommand
+	internal class LinkCommand : Command
 	{
-		public LinkCommand() : base()
+		public LinkCommand() : base("link")
 		{
 			Description = "Takes a project and references another project on your computer as if it was a NuGet package. " +
 				"allowing you to itorate on the package without having to publish or build NuGet references";
@@ -24,20 +24,23 @@ namespace Mayne.Dotnet.Link.Commands
 			targetProject.SetDefaultValueFactory(GetDefaultTargetProject);
 			targetProject.IsRequired = true;
 
+			Option<string?> targetFramework = new Option<string?>("--target-framework", "Target framework to use when evaluating multi-target projects.");
+
 			AddOption(nugetProject);
 			AddOption(targetProject);
+			AddOption(targetFramework);
 
-			this.SetHandler(InvokeAsync, nugetProject, targetProject);
+			this.SetHandler(InvokeAsync, nugetProject, targetProject, targetFramework);
 		}
 
-		private async Task InvokeAsync(FileInfo nugetProject, FileInfo targetProject)
+		private async Task InvokeAsync(FileInfo nugetProject, FileInfo targetProject, string? targetFramework)
 		{
 
 			AnsiConsole.MarkupLine($"[grey66] Linking [lightsalmon3]{targetProject.Name}[/] to [lightsalmon3]{nugetProject.Name}[/][/]");
 
 			MSProject propsProject = new MSProject();
 			MSProject targetsProject = new MSProject();
-			string? targetFramework = await GetTargetFrameworkAsync(targetProject);
+			targetFramework = await ProjectHelpers.GetTargetFrameworkAsync(targetProject, targetFramework);
 
 			// Remove the existing nuget package 
 			string? nugetPackageName = await DotnetCommands.GetPropertyAsync(nugetProject.FullName, "PackageId");
@@ -117,14 +120,11 @@ namespace Mayne.Dotnet.Link.Commands
 
 			}
 
-
 			string targetFileName = $"{targetProject.Name}.link.g.targets";
 			string propsFileName = $"{targetProject.Name}.link.g.props";
 			string objFolder = Path.Combine(targetProject.Directory!.FullName, "obj");
 			string targetsPath = Path.Combine(objFolder, targetFileName);
 			string propsPath = Path.Combine(objFolder, propsFileName);
-
-
 
 			Directory.CreateDirectory(objFolder);
 			File.WriteAllText(targetsPath, targetsProject.Serialize());
@@ -194,20 +194,6 @@ namespace Mayne.Dotnet.Link.Commands
 			return nugetInput.TryGetValue("FinalOutputPath", out string? finalOutputPath) && !string.IsNullOrWhiteSpace(finalOutputPath)
 				? finalOutputPath
 				: nugetInput.FullPath;
-		}
-
-		private static async Task<string?> GetTargetFrameworkAsync(FileInfo targetProject)
-		{
-			string? targetFramework = await DotnetCommands.GetPropertyAsync(targetProject.FullName, "TargetFramework");
-			if (!string.IsNullOrWhiteSpace(targetFramework))
-			{
-				return targetFramework;
-			}
-
-			string? targetFrameworks = await DotnetCommands.GetPropertyAsync(targetProject.FullName, "TargetFrameworks");
-			return targetFrameworks?
-				.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-				.FirstOrDefault();
 		}
 
 		private static FileInfo? GetDefaultTargetProject()

@@ -1,64 +1,78 @@
 name: Publish
-on: 
-  push: {}
-  pull_request:  {}
-  release:
-    types: [published]
-  
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "*"
+  pull_request: {}
+
 env:
   Configuration: Release
-  ProjectDir: src\Dotnet.Link\
-  ProjectName: Dotnet.Link.csproj
-  SolutionPath: src\Dotnet.Link.sln
-jobs:
-  # test: 
-  #   name: Test | ${{ matrix.project.name }}
-  #   runs-on: windows-latest
-  #   needs: build
-  #   strategy:
-  #     matrix:
-  #       project: 
-  #         - 
-  # steps: 
-  #   - uses: actions/checkout@v3
-  #     with:
-  #       ref: ${{ github.head_ref }}   
-  #   - name: Setup .NET
-  #     uses: actions/setup-dotnet@v3
-  #     with:
-  #       dotnet-version: 6.0.x
-  #   - name: Test | ${{ matrix.project.name }}
-  #     run: dotnet test src\${{ matrix.project.path }}${{ matrix.project.name }}\${{ matrix.project.name }}.csproj
+  ProjectPath: src\Dotnet.Link\Dotnet.Link.csproj
+  TestProjectPath: src\Dotnet.Link.Tests\Dotnet.Link.Tests.csproj
 
-  publish:
-    name: Publish | ${{ matrix.project.name }}
+jobs:
+  test:
+    name: Test
     runs-on: windows-latest
-    # needs: 
-    #   - test
-    strategy:
-      matrix:
-        project: 
-            - name: Dotnet.Link
     steps:
       - uses: actions/checkout@v3
-        with:
-          ref: ${{ github.head_ref }}   # checkout the correct branch name
-          fetch-depth: 0                # fetch the whole repo history
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: 6.0.x
+          dotnet-version: 10.0.x
       - name: Restore
-        run: dotnet tool restore 
+        run: dotnet restore ${{ env.TestProjectPath }}
+      - name: Run Unit Tests
+        run: dotnet test ${{ env.TestProjectPath }} --configuration ${{ env.Configuration }} --no-restore
+
+  publish_beta:
+    name: Publish Beta
+    runs-on: windows-latest
+    needs:
+      - test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 10.0.x
+      - name: Restore
+        run: dotnet tool restore
       - name: GitVersion
         run: dotnet gitversion /output buildserver
-      # Build
-      - name: Build | ${{ matrix.project.name }}
-        run: dotnet build src\${{ matrix.project.name }}\${{ matrix.project.name }}.csproj -p:Version=${{env.GitVersion_AssemblySemVer}} -p:PackageVersion=${{env.GitVersion_SemVer}} 
-      # Pack 
-      - name: Pack | ${{ matrix.project.name }}
-        run: dotnet pack src\${{ matrix.project.name }}\${{ matrix.project.name }}.csproj -p:Version=${{env.GitVersion_AssemblySemVer}}  -p:PackageVersion=${{env.GitVersion_FullSemVer}} 
-      # Release 
-      - name: Push | ${{ matrix.project.name }}
-        if: github.event_name == 'release' 
-        run: dotnet nuget push src\${{ matrix.project.name }}\bin\${{env.Configuration}}\*.nupkg --skip-duplicate --api-key ${{secrets.NUGET_API_KEY}}  --source https://api.nuget.org/v3/index.json
+      - name: Build
+        run: dotnet build ${{ env.ProjectPath }} --configuration ${{ env.Configuration }} -p:GeneratePackageOnBuild=false -p:Version=${{ env.GitVersion_AssemblySemVer }} -p:PackageVersion=${{ env.GitVersion_MajorMinorPatch }}-beta.${{ github.run_number }}
+      - name: Pack
+        run: dotnet pack ${{ env.ProjectPath }} --configuration ${{ env.Configuration }} --no-build -p:Version=${{ env.GitVersion_AssemblySemVer }} -p:PackageVersion=${{ env.GitVersion_MajorMinorPatch }}-beta.${{ github.run_number }}
+      - name: Push
+        run: dotnet nuget push src\Dotnet.Link\bin\${{ env.Configuration }}\*.nupkg --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+
+  publish_release:
+    name: Publish Release
+    runs-on: windows-latest
+    needs:
+      - test
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 10.0.x
+      - name: Restore
+        run: dotnet tool restore
+      - name: GitVersion
+        run: dotnet gitversion /output buildserver
+      - name: Build
+        run: dotnet build ${{ env.ProjectPath }} --configuration ${{ env.Configuration }} -p:GeneratePackageOnBuild=false -p:Version=${{ env.GitVersion_AssemblySemVer }} -p:PackageVersion=${{ env.GitVersion_SemVer }}
+      - name: Pack
+        run: dotnet pack ${{ env.ProjectPath }} --configuration ${{ env.Configuration }} --no-build -p:Version=${{ env.GitVersion_AssemblySemVer }} -p:PackageVersion=${{ env.GitVersion_SemVer }}
+      - name: Push
+        run: dotnet nuget push src\Dotnet.Link\bin\${{ env.Configuration }}\*.nupkg --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
