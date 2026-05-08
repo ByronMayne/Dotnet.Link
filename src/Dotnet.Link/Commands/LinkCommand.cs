@@ -120,14 +120,11 @@ namespace Mayne.Dotnet.Link.Commands
 
 			}
 
-
 			string targetFileName = $"{targetProject.Name}.link.g.targets";
 			string propsFileName = $"{targetProject.Name}.link.g.props";
 			string objFolder = Path.Combine(targetProject.Directory!.FullName, "obj");
 			string targetsPath = Path.Combine(objFolder, targetFileName);
 			string propsPath = Path.Combine(objFolder, propsFileName);
-
-
 
 			Directory.CreateDirectory(objFolder);
 			File.WriteAllText(targetsPath, targetsProject.Serialize());
