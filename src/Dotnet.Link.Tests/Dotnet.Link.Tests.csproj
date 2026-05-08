@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Dotnet.Link\Mayne.Dotnet.Link.csproj" />
+    <ProjectReference Include="..\Dotnet.Link\Dotnet.Link.csproj" />
   </ItemGroup>
 
 </Project>
