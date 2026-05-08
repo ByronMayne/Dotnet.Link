@@ -2,9 +2,9 @@
 
 namespace Mayne.Dotnet.Link.Commands
 {
-    internal class UnlinkCommand : RootCommand
+    internal class UnlinkCommand : Command
     {
-        public UnlinkCommand() : base()
+        public UnlinkCommand() : base("unlink")
         {
             Description = "Removes locally linked NuGet references.";
         }

@@ -2,9 +2,9 @@
 
 namespace Mayne.Dotnet.Link.Commands
 {
-    internal class ListCommand : RootCommand
+    internal class ListCommand : Command
     {
-        public ListCommand() : base()
+        public ListCommand() : base("list")
         {
 
         }

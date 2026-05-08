@@ -7,9 +7,9 @@ using System.ComponentModel;
 namespace Mayne.Dotnet.Link.Commands
 {
 
-	internal class LinkCommand : RootCommand
+	internal class LinkCommand : Command
 	{
-		public LinkCommand() : base()
+		public LinkCommand() : base("link")
 		{
 			Description = "Takes a project and references another project on your computer as if it was a NuGet package. " +
 				"allowing you to itorate on the package without having to publish or build NuGet references";
