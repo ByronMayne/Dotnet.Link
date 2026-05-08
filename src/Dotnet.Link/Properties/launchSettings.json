@@ -4,4 +4,5 @@
       "commandName": "Project",
       "commandLineArgs": " --target-project D:\\dev\\gdw\\cadet\\cadet.service\\src\\Source\\Cadet.HostBuilder\\Cadet.Hosting.csproj --nuget-project D:\\dev\\gdw\\libraries\\gdw.diagnostics\\src\\Gdw.Diagnostics\\Gdw.Diagnostics.csproj"
     }
+  }
 }
