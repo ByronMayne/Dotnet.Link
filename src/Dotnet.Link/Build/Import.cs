@@ -8,6 +8,7 @@ namespace Dotnet.Link.Build
         [XmlAttribute("Project")]
         public string Project { get; set; }
 
+        [XmlAttribute("Condition")]
         public string? Condition { get; set; }
 
         public Import()
