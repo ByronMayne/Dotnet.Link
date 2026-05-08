@@ -20,7 +20,7 @@ public class LinkTests
 
         try
         {
-            Exception? exception = await Record.ExceptionAsync(() => TestCommandFactory.InvokeGetTargetFrameworkAsync(projectPath));
+            Exception? exception = await Record.ExceptionAsync(() => ProjectHelpers.GetTargetFrameworkAsync(new FileInfo(projectPath)));
             Assert.IsType<InvalidOperationException>(exception);
         }
         finally

@@ -24,20 +24,23 @@ namespace Mayne.Dotnet.Link.Commands
 			targetProject.SetDefaultValueFactory(GetDefaultTargetProject);
 			targetProject.IsRequired = true;
 
+			Option<string?> targetFramework = new Option<string?>("--target-framework", "Target framework to use when evaluating multi-target projects.");
+
 			AddOption(nugetProject);
 			AddOption(targetProject);
+			AddOption(targetFramework);
 
-			this.SetHandler(InvokeAsync, nugetProject, targetProject);
+			this.SetHandler(InvokeAsync, nugetProject, targetProject, targetFramework);
 		}
 
-		private async Task InvokeAsync(FileInfo nugetProject, FileInfo targetProject)
+		private async Task InvokeAsync(FileInfo nugetProject, FileInfo targetProject, string? targetFramework)
 		{
 
 			AnsiConsole.MarkupLine($"[grey66] Linking [lightsalmon3]{targetProject.Name}[/] to [lightsalmon3]{nugetProject.Name}[/][/]");
 
 			MSProject propsProject = new MSProject();
 			MSProject targetsProject = new MSProject();
-			string? targetFramework = await GetTargetFrameworkAsync(targetProject);
+			targetFramework = await ProjectHelpers.GetTargetFrameworkAsync(targetProject, targetFramework);
 
 			// Remove the existing nuget package 
 			string? nugetPackageName = await DotnetCommands.GetPropertyAsync(nugetProject.FullName, "PackageId");
@@ -194,20 +197,6 @@ namespace Mayne.Dotnet.Link.Commands
 			return nugetInput.TryGetValue("FinalOutputPath", out string? finalOutputPath) && !string.IsNullOrWhiteSpace(finalOutputPath)
 				? finalOutputPath
 				: nugetInput.FullPath;
-		}
-
-		private static async Task<string?> GetTargetFrameworkAsync(FileInfo targetProject)
-		{
-			string? targetFramework = await DotnetCommands.GetPropertyAsync(targetProject.FullName, "TargetFramework");
-			if (!string.IsNullOrWhiteSpace(targetFramework))
-			{
-				return targetFramework;
-			}
-
-			string? targetFrameworks = await DotnetCommands.GetPropertyAsync(targetProject.FullName, "TargetFrameworks");
-			return targetFrameworks?
-				.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-				.FirstOrDefault();
 		}
 
 		private static FileInfo? GetDefaultTargetProject()
