@@ -37,8 +37,9 @@ jobs:
     #   - test
     strategy:
       matrix:
-        project: 
-            - name: Dotnet.Link
+        project:
+            - name: Mayne.Dotnet.Link
+              dir: Dotnet.Link
     steps:
       - uses: actions/checkout@v3
         with:
@@ -49,16 +50,16 @@ jobs:
         with:
           dotnet-version: 6.0.x
       - name: Restore
-        run: dotnet tool restore 
+        run: dotnet tool restore
       - name: GitVersion
         run: dotnet gitversion /output buildserver
       # Build
       - name: Build | ${{ matrix.project.name }}
-        run: dotnet build src\${{ matrix.project.name }}\${{ matrix.project.name }}.csproj -p:Version=${{env.GitVersion_AssemblySemVer}} -p:PackageVersion=${{env.GitVersion_SemVer}} 
-      # Pack 
+        run: dotnet build src\${{ matrix.project.dir }}\${{ matrix.project.name }}.csproj -p:Version=${{env.GitVersion_AssemblySemVer}} -p:PackageVersion=${{env.GitVersion_SemVer}}
+      # Pack
       - name: Pack | ${{ matrix.project.name }}
-        run: dotnet pack src\${{ matrix.project.name }}\${{ matrix.project.name }}.csproj -p:Version=${{env.GitVersion_AssemblySemVer}}  -p:PackageVersion=${{env.GitVersion_FullSemVer}} 
-      # Release 
+        run: dotnet pack src\${{ matrix.project.dir }}\${{ matrix.project.name }}.csproj -p:Version=${{env.GitVersion_AssemblySemVer}}  -p:PackageVersion=${{env.GitVersion_FullSemVer}}
+      # Release
       - name: Push | ${{ matrix.project.name }}
-        if: github.event_name == 'release' 
-        run: dotnet nuget push src\${{ matrix.project.name }}\bin\${{env.Configuration}}\*.nupkg --skip-duplicate --api-key ${{secrets.NUGET_API_KEY}}  --source https://api.nuget.org/v3/index.json
+        if: github.event_name == 'release'
+        run: dotnet nuget push src\${{ matrix.project.dir }}\bin\${{env.Configuration}}\*.nupkg --skip-duplicate --api-key ${{secrets.NUGET_API_KEY}}  --source https://api.nuget.org/v3/index.json
